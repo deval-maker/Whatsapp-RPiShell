@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, subprocess, time
+import commands
 import RPi.GPIO as GPIO
 GPIO.setwarnings(False)
 from yowsup.layers                                     import YowLayer
@@ -27,16 +28,22 @@ class EchoLayer(YowInterfaceLayer):
 	
 	def onTextMessage(self, messageProtocolEntity):
 		receipt = OutgoingReceiptProtocolEntity(messageProtocolEntity.getId(), messageProtocolEntity.getFrom()) 
+		localTime = time.asctime( time.localtime(time.time()) )
 		print("Received %s from %s" % (messageProtocolEntity.getBody(), messageProtocolEntity.getFrom(False)))
-		log = str(messageProtocolEntity.getFrom(False)) + "\t" + str(messageProtocolEntity.getBody())
-		allLogFile= open("all.log","wb")
-		allLogFile.write("\n")
+		log = str(messageProtocolEntity.getFrom(False)) + "\t" + localTime  + "\t" + str(messageProtocolEntity.getBody())
+		allLogFile= open("all.log","a")
 		allLogFile.write(log)
+		allLogFile.write("\n")
 		allLogFile.close()
 		bdy= str(messageProtocolEntity.getBody())	
 		bdy = bdy + ' '
 		if ('$' in bdy):
 			command=bdy.split('$')[1]
+			cmdLog = str(messageProtocolEntity.getFrom(False)) + "\t" + localTime  + "\t" + command
+			cmdLogFile= open("cmd.log","a")
+			cmdLogFile.write(cmdLog)
+			cmdLogFile.write("\n")
+			cmdLogFile.close()
 			if ( (command.split(' ')[0] in nac ) or (command.split(' ')[1] in nac) ):
 				print (command + '  unAuthorised Command Given' )
 				answer='This command is not authorised for you.'
@@ -44,13 +51,15 @@ class EchoLayer(YowInterfaceLayer):
 				self.toLower(TextMessageProtocolEntity(answer,to = messageProtocolEntity.getFrom()))
 			else:
 				print (command + '  will be executed in shell\n' )
-				cmdLog = str(messageProtocolEntity.getFrom(False)) + "\t" + command
-				cmdLogFile= open("cmd.log","wb")
-				cmdLogFile.write("\n")
-				cmdLogFile.write(cmdLog)
-				cmdLogFile.close()
-				answer='Shell Mode Activated. '
-				os.system(command)
+				status,output=commands.getstatusoutput(command)
+				opList=output.split("\n")
+				opNew=''
+				for element in opList:
+					opNew += element + '\n'
+				if (status != 0):
+					answer='There is an error: \n' + opNew
+				else:
+					answer = opNew
 				self.toLower(receipt)
 				self.toLower(TextMessageProtocolEntity(answer,to = messageProtocolEntity.getFrom()))
 		else:
