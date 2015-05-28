@@ -8,6 +8,12 @@ from yowsup.layers.protocol_messages.protocolentities  import TextMessageProtoco
 from yowsup.layers.protocol_receipts.protocolentities  import OutgoingReceiptProtocolEntity
 from yowsup.layers.protocol_acks.protocolentities      import OutgoingAckProtocolEntity
 
+allowedPersons=['NUMBER_ALLOWED1','NUMBER_ALLOWED2','NUMBER_ALLOWED3','NUMBER_ALLOWED4']
+ap = set(allowedPersons)
+
+notAllowedCommands=['nano','reboot','shutdown','killall']
+nac = set(notAllowedCommands)
+
 class EchoLayer(YowInterfaceLayer):
 	
 	@ProtocolEntityCallback("message")
@@ -22,15 +28,31 @@ class EchoLayer(YowInterfaceLayer):
 	def onTextMessage(self, messageProtocolEntity):
 		receipt = OutgoingReceiptProtocolEntity(messageProtocolEntity.getId(), messageProtocolEntity.getFrom()) 
 		print("Received %s from %s" % (messageProtocolEntity.getBody(), messageProtocolEntity.getFrom(False)))
+		log = str(messageProtocolEntity.getFrom(False)) + "\t" + str(messageProtocolEntity.getBody())
+		allLogFile= open("all.log","wb")
+		allLogFile.write("\n")
+		allLogFile.write(log)
+		allLogFile.close()
 		bdy= str(messageProtocolEntity.getBody())	
+		bdy = bdy + ' '
 		if ('$' in bdy):
 			command=bdy.split('$')[1]
-			print (bdy + '  received: Shell Mode Activated.' )
-			answer='Shell Mode Activated. '
-			os.system(command)
-			self.toLower(receipt)
-			self.toLower(TextMessageProtocolEntity(answer,to = messageProtocolEntity.getFrom()))
-		
+			if ( (command.split(' ')[0] in nac ) or (command.split(' ')[1] in nac) ):
+				print (command + '  unAuthorised Command Given' )
+				answer='This command is not authorised for you.'
+				self.toLower(receipt)
+				self.toLower(TextMessageProtocolEntity(answer,to = messageProtocolEntity.getFrom()))
+			else:
+				print (command + '  will be executed in shell\n' )
+				cmdLog = str(messageProtocolEntity.getFrom(False)) + "\t" + command
+				cmdLogFile= open("cmd.log","wb")
+				cmdLogFile.write("\n")
+				cmdLogFile.write(cmdLog)
+				cmdLogFile.close()
+				answer='Shell Mode Activated. '
+				os.system(command)
+				self.toLower(receipt)
+				self.toLower(TextMessageProtocolEntity(answer,to = messageProtocolEntity.getFrom()))
 		else:
 			if 'hi' in bdy.lower():
 				answer = 'Hello!'
