@@ -28,15 +28,10 @@ class EchoLayer(YowInterfaceLayer):
 			print("Received %s from %s" % (messageProtocolEntity.getBody(), messageProtocolEntity.getFrom(False)))
 			bdy= str(messageProtocolEntity.getBody())
 			print bdy
-			if 'Hi' in bdy:
+			if 'hi' in bdy.lower():
 				answer = 'Hello!'
 				self.toLower(receipt)	
 				self.toLower(TextMessageProtocolEntity(answer, to = messageProtocolEntity.getFrom()))
-                        elif 'hi' in bdy:
-                                answer = 'Hello!'
-                                self.toLower(receipt)
-                                self.toLower(TextMessageProtocolEntity(answer, to = messageProtocolEntity.getFrom()))
-                                
 			else:
 				self.toLower(receipt)
                                 self.toLower(TextMessageProtocolEntity(messageProtocolEntity.getBody(), to = messageProtocolEntity.getFrom()))
