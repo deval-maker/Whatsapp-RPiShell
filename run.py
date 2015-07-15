@@ -16,7 +16,7 @@ from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
 from yowsup.layers.stanzaregulator             import YowStanzaRegulator
 
 
-CREDENTIALS = ("919925195998", "xreBJQf/pitX4UW/vehe5E1IfjU=")     #here number and password
+CREDENTIALS = ("Your Phone Number", "Your Password=")     #here number and password
 
 if __name__==  "__main__":
     layers = (
