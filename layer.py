@@ -12,7 +12,7 @@ from yowsup.layers.protocol_acks.protocolentities      import OutgoingAckProtoco
 allowedPersons=['NUMBER_ALLOWED1','NUMBER_ALLOWED2','NUMBER_ALLOWED3','NUMBER_ALLOWED4']
 ap = set(allowedPersons)
 
-notAllowedCommands=['nano','reboot','shutdown','killall']
+notAllowedCommands=['nano','reboot','shutdown','killall','kill','rf']
 nac = set(notAllowedCommands)
 
 class EchoLayer(YowInterfaceLayer):
@@ -63,7 +63,7 @@ class EchoLayer(YowInterfaceLayer):
 				self.toLower(receipt)
 				self.toLower(TextMessageProtocolEntity(answer,to = messageProtocolEntity.getFrom()))
 		else:
-			if 'hi' in bdy.lower():
+			if 'ssup' in bdy.lower():
 				answer = 'Hello!'
 				self.toLower(receipt)	
 				self.toLower(TextMessageProtocolEntity(answer, to = messageProtocolEntity.getFrom()))
