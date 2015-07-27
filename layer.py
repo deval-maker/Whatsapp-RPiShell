@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, subprocess, time
 import commands
-import RPi.GPIO as GPIO
-GPIO.setwarnings(False)
 from yowsup.layers                                     import YowLayer
 from yowsup.layers.interface                           import YowInterfaceLayer, ProtocolEntityCallback
 from yowsup.layers.protocol_messages.protocolentities  import TextMessageProtocolEntity
