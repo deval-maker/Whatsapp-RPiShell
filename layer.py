@@ -7,6 +7,9 @@ from yowsup.layers.protocol_messages.protocolentities  import TextMessageProtoco
 from yowsup.layers.protocol_receipts.protocolentities  import OutgoingReceiptProtocolEntity
 from yowsup.layers.protocol_acks.protocolentities      import OutgoingAckProtocolEntity
 
+
+ShellInstanceDictionary = dict()
+
 allowedPersons=['NUMBER_ALLOWED1','NUMBER_ALLOWED2','NUMBER_ALLOWED3','NUMBER_ALLOWED4']
 ap = set(allowedPersons)
 
@@ -49,6 +52,8 @@ class EchoLayer(YowInterfaceLayer):
 				self.toLower(TextMessageProtocolEntity(answer,to = messageProtocolEntity.getFrom()))
 			else:
 				print (command + '  will be executed in shell\n' )
+				
+				'''
 				status,output=commands.getstatusoutput(command)
 				opList=output.split("\n")
 				opNew=''
@@ -58,6 +63,30 @@ class EchoLayer(YowInterfaceLayer):
 					answer='There is an error: \n' + opNew
 				else:
 					answer = opNew
+				
+				'''
+				command = command + '\n'
+				phnnumber = str(messageProtocolEntity.getFrom(False))
+				print phnnumber
+
+				if (phnnumber in ShellInstanceDictionary):
+					shellexist = ShellInstanceDictionary[phnnumber] 
+					shellexist.stdin.write(command) 
+					answer = shellexist.stdout.readline()
+					print answer
+					print "number exists"
+				else:
+					shellnew = subprocess.Popen(['/bin/bash'],shell = False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+					print "shell created"
+					ShellInstanceDictionary[phnnumber] = shellnew
+					print "dictionary element added"
+					shellnew.stdin.write(command)
+					print "command sent to shell"
+					answer = shellnew.stdout.readline()
+					print answer
+
+				print ShellInstanceDictionary
+
 				self.toLower(receipt)
 				self.toLower(TextMessageProtocolEntity(answer,to = messageProtocolEntity.getFrom()))
 		else:
@@ -68,4 +97,3 @@ class EchoLayer(YowInterfaceLayer):
 			else:
 				self.toLower(receipt)
 				self.toLower(TextMessageProtocolEntity(messageProtocolEntity.getBody(), to = messageProtocolEntity.getFrom()))
-
